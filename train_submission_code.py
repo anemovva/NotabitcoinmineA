@@ -73,6 +73,9 @@ def main():
         # Example: {'state': 'RUNNING', 'score': {'score': 0.0, 'score_secondary': 0.0}, 'instances': {'1': {'totalNumberSteps': 2001, 'totalNumberEpisodes': 0, 'currentEnvironment': 'MineRLObtainDiamond-v0', 'state': 'IN_PROGRESS', 'episodes': [{'numTicks': 2001, 'environment': 'MineRLObtainDiamond-v0', 'rewards': 0.0, 'state': 'IN_PROGRESS'}], 'score': {'score': 0.0, 'score_secondary': 0.0}}}}
         # .current_state: provide indepth state information avaiable as dictionary (key: instance id)
 
+        
+        
+
     # Save trained model to train/ directory
     # For a demonstration, we save some dummy data.
     # NOTE: During Round 1 submission you upload trained agents as part of the git repository.
