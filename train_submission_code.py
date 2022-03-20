@@ -1,8 +1,13 @@
+from cmath import inf
 import json
 import select
 import time
 import logging
 import os
+import torch
+
+from model import *
+from utils import *
 
 import numpy as np
 import aicrowd_helper
@@ -18,7 +23,7 @@ coloredlogs.install(logging.DEBUG)
 # ------------
 
 # All research-tracks evaluations will be ran on the MineRLObtainDiamondVectorObf-v0 environment
-MINERL_GYM_ENV = os.getenv('MINERL_GYM_ENV', 'MineRLObtainDiamondVectorObf-v0')
+MINERL_GYM_ENV = os.getenv('MINERL_GYM_ENV', 'MineRLObtainDiamond-v0')
 # You need to ensure that your submission is trained in under MINERL_TRAINING_MAX_STEPS steps
 MINERL_TRAINING_MAX_STEPS = int(os.getenv('MINERL_TRAINING_MAX_STEPS', 8000000))
 # You need to ensure that your submission is trained by launching less than MINERL_TRAINING_MAX_INSTANCES instances
@@ -45,6 +50,10 @@ parser = Parser(
 
 
 def main():
+
+    model = MineNet()
+    itemsdict = ItemManager()
+
     """
     This function will be called for training phase.
     """
@@ -54,24 +63,45 @@ def main():
 
     # Sample code for illustration, add your training code below
     env = gym.make(MINERL_GYM_ENV)
+    for i in range(1,10):
+        # For an example, lets just run one episode of MineRL for training
+        observe = env.reset()
+        done = False
+        mem = None
+        while not done:
+            observe, reward, done, info = env.step(env.action_space.sample())
 
-    # For an example, lets just run one episode of MineRL for training
-    obs = env.reset()
-    done = False
-    while not done:
-        obs, reward, done, info = env.step(env.action_space.sample())
-        # Do your training here
+            print("Observe:", observe)
+            print("Info:", info)
+            print("Actions: ", env.action_space.sample())
 
-        # To get better view in your training phase, it is suggested
-        # to register progress continuously, example when 54% completed
-        # aicrowd_helper.register_progress(0.54)
+            frame = torch.from_numpy(observe["pov"].copy())
+            
+            inv = observe["inventory"]
+            invec = []
+            for num in inv:
+                invec.append(inv[num].item())
+            
+            print("Inventory vector: ", invec)
 
-        # To fetch latest information from instance manager, you can run below when you want to know the state
-        #>> parser.update_information()
-        #>> print(parser.payload)
-        # .payload: provide AIcrowd generated json
-        # Example: {'state': 'RUNNING', 'score': {'score': 0.0, 'score_secondary': 0.0}, 'instances': {'1': {'totalNumberSteps': 2001, 'totalNumberEpisodes': 0, 'currentEnvironment': 'MineRLObtainDiamond-v0', 'state': 'IN_PROGRESS', 'episodes': [{'numTicks': 2001, 'environment': 'MineRLObtainDiamond-v0', 'rewards': 0.0, 'state': 'IN_PROGRESS'}], 'score': {'score': 0.0, 'score_secondary': 0.0}}}}
-        # .current_state: provide indepth state information avaiable as dictionary (key: instance id)
+            invec = torch.LongTensor(invec)
+
+            (movement, attack, craft, smelt), mem = model(frame, invec, mem)
+
+            
+
+            # Do your training here
+
+            # To get better view in your training phase, it is suggested
+            # to register progress continuously, example when 54% completed
+            # aicrowd_helper.register_progress(0.54)
+
+            # To fetch latest information from instance manager, you can run below when you want to know the state
+            #>> parser.update_information()
+            #>> print(parser.payload)
+            # .payload: provide AIcrowd generated json
+            # Example: {'state': 'RUNNING', 'score': {'score': 0.0, 'score_secondary': 0.0}, 'instances': {'1': {'totalNumberSteps': 2001, 'totalNumberEpisodes': 0, 'currentEnvironment': 'MineRLObtainDiamond-v0', 'state': 'IN_PROGRESS', 'episodes': [{'numTicks': 2001, 'environment': 'MineRLObtainDiamond-v0', 'rewards': 0.0, 'state': 'IN_PROGRESS'}], 'score': {'score': 0.0, 'score_secondary': 0.0}}}}
+            # .current_state: provide indepth state information avaiable as dictionary (key: instance id)
 
         
         
@@ -85,7 +115,7 @@ def main():
     np.save("./train/parameters.npy", np.random.random((10,)))
 
     # Training 100% Completed
-    aicrowd_helper.register_progress(1)
+    # aicrowd_helper.register_progress(1)
     env.close()
 
 
