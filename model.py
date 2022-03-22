@@ -60,5 +60,4 @@ class MineNet(nn.Module):
             attack = 1
         return (self.softmax(movement), self.softmax(attack), craft, smelt), mem
     
-    def makeaction(self, x):
-        OrderedDict([('attack', array()), ('back', array(0)), ('camera', array([  0, 0], dtype=float32)), ('craft', ''), ('equip', ''), ('forward', array(0)), ('jump', array(0)), ('left', array(0)), ('nearbyCraft', ''), ('nearbySmelt', ''), ('place', ''), ('right', array(0)), ('sneak', array(0)), ('sprint', array(0))])
+   

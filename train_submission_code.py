@@ -68,8 +68,13 @@ def main():
         observe = env.reset()
         done = False
         mem = None
+
+        observe, reward, done, info = env.step(env.action_space.sample())
+
+        
         while not done:
-            observe, reward, done, info = env.step(env.action_space.sample())
+            # observe, reward, done, info = env.step(env.action_space.sample())
+
 
             print("Observe:", observe)
             print("Info:", info)
@@ -87,6 +92,8 @@ def main():
             invec = torch.LongTensor(invec)
 
             (movement, attack, craft, smelt), mem = model(frame, invec, mem)
+
+            observe, reward, done, info = env.step(makeaction(movement, attack, craft, smelt))
 
             
 
